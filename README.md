@@ -55,7 +55,7 @@ You should now have two folder ```openfoam-data``` and ```openfoam-dockerfiles``
 *2e)* Build the OpenFOAM image:
 
 ```shell
-docker image build --no-cache -t openfoam $HOME/openfoam-dockerfiles/esi/latest/
+docker image build --no-cache -t openfoam:<version> $HOME/openfoam-dockerfiles/<esi|foundation>/<version>/
 ```
 
 ## 3. Run the Docker container
@@ -63,12 +63,14 @@ docker image build --no-cache -t openfoam $HOME/openfoam-dockerfiles/esi/latest/
 *3a)* Finally, start a Docker container with ``/data`` mapped to ``$HOME/openfoam-data``:
 
 ```shell
-docker container run -ti --rm -v $HOME/openfoam-data:/data -w /data openfoam:latest
+docker container run -ti --rm -v $HOME/openfoam-data:/data:z -w /data openfoam:<version>
 ```
+
+Note: the `:z` at the end of the volume path makes it work with SELinux (see https://stackoverflow.com/a/54787364). Otherwise you will get something like `cannot open directory '.': Permission denied`.
 
 Note: All files stored in the container are deleted when you exit the container. Therefore you should save your simulation results and solver development in ``/data``, which is the only directory that persists when the container is closed.
 
-Running the above command should leave you inside the Docker container with the username ```foam```. 
+Running the above command should leave you inside the Docker container with the username ```foam```.
 
 ## 4. Accessing files in the Docker container
 
@@ -98,18 +100,18 @@ New-Item -Path $profile -ItemType file -force
 
 *5d)* Add the alias to the newly created file:
 ```shell
-echo "function openfoam-docker-latest {docker container run -ti --rm -v $HOME/openfoam-data:/data -w /data openfoam:latest} Set-Alias of openfoam-docker-latest" > $profile
+echo "function openfoam-docker-<version> {docker container run -ti --rm -v $HOME/openfoam-data:/data -w /data openfoam:<version>} Set-Alias of openfoam-docker-<version>" > $profile
 ```
 
 We can now start the container using the newly created ```of``` alias by typing ```of``` in the Power Shell.
 
 ### **macOS and Linux systems**
-*5a)* 
+*5a)*
 Copy/paste the following code snippet in the terminal:
 ```shell
 case "$OSTYPE" in
-  linux*)   echo "alias of='docker container run -ti --rm -v $HOME/openfoam-data:/data -w /data openfoam:latest'" >> $HOME/.bashrc ;;
-  darwin*)  echo "alias of='docker container run -ti --rm -v $HOME/openfoam-data:/data -w /data openfoam:latest'" >> $HOME/.zprofile ;;
+  linux*)   echo "alias of='docker container run -ti --rm -v $HOME/openfoam:/data:z -w /data openfoam:<version>'" >> $HOME/.bashrc ;;
+  darwin*)  echo "alias of='docker container run -ti --rm -v $HOME/openfoam:/data -w /data openfoam:<version>'" >> $HOME/.zprofile ;;
   *)        echo "This function is not yet added for $OSTYPE" ;;
 esac
 ```
@@ -117,18 +119,18 @@ esac
 After opening a new terminal, we can now start the container using the newly created ```of``` alias by typing ```of``` in the Power Shell.
 
 ## 6. Install extensions
-If you need to add extensions to your image, you may extend it by following the steps below. 
+If you need to add extensions to your image, you may extend it by following the steps below.
 
 *6a)* To extend our Docker image to include a Python installation with different useful packages:
 
 ```shell
-docker image build -t openfoam $HOME/openfoam-dockerfiles/extensions/python
+docker image build -t openfoam:<version> $HOME/openfoam-dockerfiles/extensions/python --build-arg=OF_VERSION=<version>
 ```
 
 *6b)* To extend our Docker image to include a FreeCad installation:
 
 ```shell
-docker image build -t openfoam $HOME/openfoam-dockerfiles/extensions/freecad
+docker image build -t openfoam:<version> $HOME/openfoam-dockerfiles/extensions/freecad --build-arg=OF_VERSION=<version>
 ```
 
 ## 7. Author list

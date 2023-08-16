@@ -1,4 +1,5 @@
-FROM openfoam
+ARG OF_VERSION
+FROM openfoam:${OF_VERSION}
 
 USER root
 
@@ -13,6 +14,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # install python packages
 RUN pip3 install numpy
 RUN pip3 install matplotlib
+RUN pip3 install pandas
+RUN pip3 install scipy
 RUN pip3 install openturns==1.19.post1
 RUN pip3 install platypus-opt==1.0.4
 
